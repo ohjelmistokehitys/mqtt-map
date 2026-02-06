@@ -31,20 +31,26 @@ body,
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                flex-direction: column;
-                transform-origin: 50% 50%;
 
                 .icon {
                     width: 24px;
                     height: 24px;
+
                     fill: #1f6feb;
                     stroke: #0b1f33;
                     stroke-width: 1px;
+                    transform-origin: 50% 50%;
                 }
 
                 span {
                     font-size: 80%;
                     font-weight: bold;
+                    color: darkblue;
+
+                    position: absolute;
+                    top: 80%;
+                    width: 100%;
+                    text-align: center;
                 }
             }
         }

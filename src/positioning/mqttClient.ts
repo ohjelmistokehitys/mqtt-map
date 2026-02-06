@@ -26,6 +26,10 @@ export function subscribeToVehiclePositions(update: LocationUpdater): () => void
         }
     });
 
+    client.on("error", (error) => {
+        console.error("MQTT error:", error);
+    });
+
     // returns an unsubscribe function, which the caller can use to close the connection
     return () => { client.end() };
 }
