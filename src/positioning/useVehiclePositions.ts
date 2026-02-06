@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
+import type { VehiclePosition } from "../types";
 import { subscribeToVehiclePositions } from "./mqttClient";
-import type { VehiclePosition } from "./types";
 
 
 export function useVehiclePositions() {
@@ -8,9 +8,12 @@ export function useVehiclePositions() {
     const [connected, setConnected] = useState(false);
 
     useEffect(() => {
-        return subscribeToVehiclePositions((pos) => {
+        return subscribeToVehiclePositions((vehicle) => {
             setConnected(true);
-            setVehicleMap((prev) => ({ ...prev, [vehicleKey(pos)]: pos }));
+            setVehicleMap((prev) => ({
+                ...prev,
+                [vehicle.id]: vehicle
+            }));
         });
     }, []);
 
@@ -19,5 +22,3 @@ export function useVehiclePositions() {
         connected
     };
 }
-
-const vehicleKey = (vp: VehiclePosition) => `${vp.oper}/${vp.veh}`;

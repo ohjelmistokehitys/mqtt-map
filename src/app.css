@@ -14,7 +14,12 @@ body,
             height: 100%;
         }
 
-        table tr td {
+        table.vehicle-info {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        tr td {
             border: 1px solid #ccc;
             padding: 4px;
         }

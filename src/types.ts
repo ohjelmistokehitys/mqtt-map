@@ -15,6 +15,12 @@ export type VehiclePositionPayload = {
  * Vehicle position message (example-specific)
  */
 export type VehiclePosition = {
+
+    /**
+     * A new property, not included in the original message, used as a unique identifier for the vehicle.
+     */
+    id: string;
+
     /**
      * Route number visible to passengers.
      */
