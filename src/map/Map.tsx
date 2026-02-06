@@ -19,7 +19,6 @@ export default function TrafficMap({ center, zoom = 13 }: MapProps) {
             {vehicles.map(vp =>
                 <VehicleMarker key={vp.id} vehicle={vp} />
             )}
-
         </MapContainer>
     );
 }

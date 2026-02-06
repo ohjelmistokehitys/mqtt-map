@@ -4,6 +4,10 @@ export function VehicleInfo({ vehicle }: { vehicle: VehiclePosition; }) {
     return <table className="vehicle-info">
         <tbody>
             <tr>
+                <td>Route number</td>
+                <td>{vehicle.desi}</td>
+            </tr>
+            <tr>
                 <td>Line</td>
                 <td>{vehicle.line}</td>
             </tr>
