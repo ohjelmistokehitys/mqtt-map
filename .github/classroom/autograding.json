@@ -1,0 +1,44 @@
+{
+    "tests": [
+        {
+            "name": "should connect to the MQTT broker",
+            "setup": "",
+            "run": "npx vitest run -t '@connect'",
+            "input": "",
+            "output": "",
+            "comparison": "exact",
+            "timeout": 1,
+            "points": 30
+        },
+        {
+            "name": "should subscribe to the vehicle position topic on connect",
+            "setup": "",
+            "run": "npx vitest run -t '@subscribe'",
+            "input": "",
+            "output": "",
+            "comparison": "exact",
+            "timeout": 1,
+            "points": 20
+        },
+        {
+            "name": "should call the callback function with vehicle position data when a message is received",
+            "setup": "",
+            "run": "npx vitest run -t '@message'",
+            "input": "",
+            "output": "",
+            "comparison": "exact",
+            "timeout": 1,
+            "points": 30
+        },
+        {
+            "name": "should return a cleanup function that closes the MQTT connection",
+            "setup": "",
+            "run": "npx vitest run -t '@cleanup'",
+            "input": "",
+            "output": "",
+            "comparison": "exact",
+            "timeout": 1,
+            "points": 20
+        }
+    ]
+}
