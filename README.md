@@ -19,6 +19,20 @@ Liikenteen sijaintitietojen päivittäminen on toteutettu [`useVehiclePositions`
 
 Varsinainen MQTT-asiakaslogiikka on tarkoitus toteuttaa erillisessä [`mqttClient.ts`-tiedostossa](./src/positioning/mqttClient.ts), joka tarjoaa yksinkertaisen rajapinnan MQTT-viestintäpalveluun. Tiedoston `subscribeToVehiclePositions`-funktio on tarkoitus toteuttaa siten, että tälle funktiolle voidaan antaa [callback-funktio](), jota kutsutaan aina, kun uusia ajoneuvotietoja saapuu MQTT:stä. Tällä tavalla React-komponentit voivat "tilata" ajoneuvotietoja ilman, että niiden tarvitsee tietää MQTT:n yksityiskohdista.
 
+```
+src
+├── map
+│   ├── TrafficMap.tsx          # karttakomponentti
+│   ├── VehicleMarker.tsx       # ajoneuvon karttapiste
+│   └── VehicleInfo.tsx         # ajoneuvon lisätiedot
+├── positioning
+│   ├── mqttClient.spec.ts      # tehtävän testit
+│   ├── mqttClient.ts           # tehtävän toteutettava osa
+│   └── useVehiclePositions.ts  # tilanhallinta komponenttien ja MQTT:n välillä
+├── mqttDemo.ts                 # erillinen Node.js-skripti yhteyden testaamiseen
+└── types.ts                    # rajapinnan TypeScript-tyypit
+```
+
 
 ## Sovelluksen käynnistäminen
 
