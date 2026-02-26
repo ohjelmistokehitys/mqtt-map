@@ -126,7 +126,7 @@ Koska sijaintitiedot vaihtuvat jatkuvasti, testit eivät käytä oikeaa MQTT-pal
 Kun olet toteuttanut `subscribeToVehiclePositions`-funktion, voit ajaa testit komennolla:
 
 ```bash
-npm run test
+npm test
 ```
 
 
