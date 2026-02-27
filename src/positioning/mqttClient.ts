@@ -1,3 +1,4 @@
+import mqtt from "mqtt";
 import type { VehiclePosition } from "../types";
 
 // The type for the function that is passed to the subscribeToVehiclePositions function.
@@ -18,7 +19,23 @@ type CleanupFunction = () => void;
  * @returns A cleanup function that can be used to close the MQTT connection.
  */
 export function subscribeToVehiclePositions(update: LocationUpdater): CleanupFunction {
-    // TODO: Implement this function and return a cleanup function that closes the MQTT connection when called.
 
-    return () => { };
+    const client = mqtt.connect("wss://mqtt.hsl.fi:443/");
+
+    client.on("connect", () => {
+        client.subscribe("/hfp/v2/journey/ongoing/vp/#", (err) => {
+            if (err) {
+                console.error("Failed to subscribe to topic:", err);
+            }
+        });
+    });
+
+    client.on("message", (_topic, message) => {
+        const payload = JSON.parse(message.toString());
+        if (payload.VP) {
+            update(payload.VP);
+        }
+    });
+
+    return () => client.end();
 }
