@@ -105,7 +105,7 @@ Ensimmäisenä funktiosi tulee muodostaa yhteys Digitransit-palvelun MQTT-broker
 
 ### 2. Sijaintitietojen tilaaminen (20 %)
 
-Kun yhteys on muodostettu, sinun tulee tilata sopiva [*topic*-kanava](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#the-topic) saadaksesi ajoneuvotiedot. Digitransit-palvelussa ajoneuvotiedot julkaistaan `hfp/v2/+/+/+/#`-topic-kanavissa, jossa `+`-merkit sekä `#`-merkit ovat jokerimerkkejä, jotka voivat vastata mitä tahansa yksittäistä arvoa tai useampaa arvoa.
+Kun yhteys on muodostettu, sinun tulee tilata sopiva [*topic*-kanava](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#the-topic) saadaksesi ajoneuvotiedot. Digitransit-palvelussa ajoneuvotiedot julkaistaan `/hfp/v2/+/+/+/#`-topic-kanavissa, jossa `+`-merkit sekä `#`-merkit ovat jokerimerkkejä, jotka voivat vastata mitä tahansa yksittäistä arvoa tai useampaa arvoa.
 
 Topicissa määritellään mm. ajoneuvon tilapäivityksen tyyppi, joista olemme kiinnostuneet ainoastaan `vp`-tyypin *vehicle position* -tilapäivityksistä. Näin ollen voit tilata esimerkiksi `/hfp/v2/journey/ongoing/vp/#`-topic-kanavan, jonka kautta saat kaikki mahdolliset ajoneuvotiedot, jotka liittyvät meneillään olevien matkojen sijaintipäivityksiin. Tämä kanava tuottaa erittäin paljon tietoa, joten voit myös tutustua dokumentaatioon ja rajata tilaustasi tarkemmin. Tarkemmat tiedot löydät [Digitransit-palvelun HFP-dokumentaatiosta](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#the-topic) sekä sen [esimerkeistä](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#examples).
 
