@@ -5,21 +5,18 @@
  */
 
 /**
- * Wrapper for a vehicle position (VP) message
+ * The structure of the MQTT messages provided by the broker. The broker supports a variety of different message types,
+ * but for this application we are only interested in messages that contain vehicle position data, which are identified 
+ * by the `VP` attribute in the message payload.
  */
-export type VehiclePositionPayload = {
+export type MqttPayload = {
     VP: VehiclePosition;
 }
 
 /**
- * Vehicle position message (example-specific)
+ * Vehicle position message as described in the Digitransit API documentation.
  */
 export type VehiclePosition = {
-
-    /**
-     * A new property, not included in the original message, used as a unique identifier for the vehicle.
-     */
-    id: string;
 
     /**
      * Route number visible to passengers.
