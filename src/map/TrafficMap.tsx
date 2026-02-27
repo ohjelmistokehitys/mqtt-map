@@ -24,7 +24,7 @@ export default function TrafficMap({ center, zoom = 13 }: MapProps) {
             <TileConfig />
 
             {vehicles.map(vp =>
-                <VehicleMarker key={vp.id} vehicle={vp} />
+                <VehicleMarker key={`${vp.oper}/${vp.veh}`} vehicle={vp} />
             )}
         </MapContainer>
     );
