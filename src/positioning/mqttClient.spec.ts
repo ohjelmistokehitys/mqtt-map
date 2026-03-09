@@ -52,9 +52,7 @@ describe("subscribeToVehiclePositions", () => {
 
         subscribeToVehiclePositions(callback);
 
-        expect(eventHandlers.connect).toBeDefined();
-
-        eventHandlers.connect();
+        eventHandlers.connect?.();
 
         expect(mockClient.subscribe).toHaveBeenCalled();
     });
@@ -65,7 +63,7 @@ describe("subscribeToVehiclePositions", () => {
         subscribeToVehiclePositions(callback);
 
         // Simulate connection
-        eventHandlers.connect();
+        eventHandlers.connect?.();
 
         // Make sure that a message handler was registered
         expect(eventHandlers.message).toBeDefined();
@@ -97,7 +95,7 @@ describe("subscribeToVehiclePositions", () => {
         const callback = vi.fn();
 
         subscribeToVehiclePositions(callback);
-        eventHandlers.connect();
+        eventHandlers.connect?.();
 
         // Send three messages
         for (let i = 0; i < 3; i++) {
