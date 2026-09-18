@@ -13,6 +13,13 @@ Suosittelemme perehtymään [MQTT-protokollan perusperiaatteisiin](https://aws.a
 Tiedonsiirtologiikka on pyritty tekemään täysin erilliseksi React-komponenteista, jotta voit keskittyä MQTT-asiakaslogiikan toteuttamiseen ilman, että sinun tarvitsee huolehtia siitä, miten React-komponentit toimivat. Logiikan toteuttaminen osaksi isompaa sovellusta voi olla siitä huolimatta haastavaa. Vaihtoehtoisesti voit käyttää MQTT-asiakaslogiikkaasi komentoriviltä ajettavalla [`mqttDemo.ts`-skriptillä](./src/mqttDemo.ts), josta kerrotaan tarkemmin alempana.
 
 
+## Kehitysympäristö
+
+Tämä tehtävä on suunniteltu ratkaistavaksi [kehityskontissa](https://code.visualstudio.com/docs/devcontainers/containers) tai [CodeSpacessa](https://github.com/features/codespaces). Repositorio sisältää valmiin [`devcontainer.json`-tiedoston](./.devcontainer/devcontainer.json), jossa on määritetty kehitysympäristön asetukset. Kehityskontti eristää projektin muusta käyttöjärjestelmästä, joten sillä voi olla myös positiivisia tietoturvavaikutuksia.
+
+Halutessasi voit ratkaista tehtävän myös paikallisessa kehitysympäristössä, kunhan sinulla on tuore Node.js-versio sekä npm-paketinhallinta asennettuna.
+
+
 ## Sovelluksen rakenne
 
 Sovellus koostuu React-komponenteista sekä MQTT-asiakaslogiikasta, joka on toteutettu komponenttien ulkopuolelle. Sovelluksen [pääkomponentti on `TrafficMap`](./src/map/TrafficMap.tsx), joka renderöi kartan ja näyttää ajoneuvojen sijainnit. Ajoneuvot esitetään kartalla [ikoneina (`VehicleMarker`)](./src/map/VehicleMarker.tsx), ja niiden klikkaaminen avaa [lisätietoja ajoneuvosta (`VehicleInfo`)](./src/map/VehicleInfo.tsx). React-komponentteihin ei tarvitse tehdä muutoksia, mutta niihin tutustuminen voi auttaa hahmottamaan sovelluksen toimintaperiaatetta. Voit halutessasi tehdä niihin myös parannuksia, kuten näkyvän alueen ulkopuolisten ajoneuvojen piilottamisen.
@@ -86,7 +93,7 @@ npm install --save-dev tsx
 npx tsx ./src/mqttDemo.ts
 ```
 
-`mqttDemo.ts`-tiedosto kutsuu `subscribeToVehiclePositions`-funktiota ja tulostaa konsoliin kaikki saapuvat ajoneuvotiedot. Tämä on kätevä tapa testata MQTT-asiakaslogiikkaa erillään React-sovelluksesta, ja voit käyttää tätä skriptiä varmistaaksesi, että saat ajoneuvotiedot oikein MQTT:stä ennen kuin kokeilet logiikkaasi selaimessa ja osana isompaa sovellusta. 
+`mqttDemo.ts`-tiedosto kutsuu `subscribeToVehiclePositions`-funktiota ja tulostaa konsoliin kaikki saapuvat ajoneuvotiedot. Tämä on kätevä tapa testata MQTT-asiakaslogiikkaa erillään React-sovelluksesta, ja voit käyttää tätä skriptiä varmistaaksesi, että saat ajoneuvotiedot oikein MQTT:stä ennen kuin kokeilet logiikkaasi selaimessa ja osana isompaa sovellusta.
 
 > [!TIP]
 > Alussa `mqttDemo.ts`-tiedosto ei tulosta mitään, mutta toteuttaessasi `subscribeToVehiclePositions`-funktion, sen pitäisi alkaa tulostamaan ajoneuvotietoja konsoliin.
@@ -124,7 +131,7 @@ Jotta alun perin `subscribeToVehiclePositions`-funktiotasi kutsunut taho saa tie
 
 ### 4. Yhteyden sulkeminen (20 %)
 
-Sovelluksessa on syytä olla myös mekanismi MQTT-yhteyden sulkemiseksi, kun sitä ei enää tarvita. Esimerkiksi React-sovelluksessa käyttäjä saattaa navigoida pois karttanäkymästä, jolloin MQTT-yhteyden sulkeminen on tärkeää. 
+Sovelluksessa on syytä olla myös mekanismi MQTT-yhteyden sulkemiseksi, kun sitä ei enää tarvita. Esimerkiksi React-sovelluksessa käyttäjä saattaa navigoida pois karttanäkymästä, jolloin MQTT-yhteyden sulkeminen on tärkeää.
 
 MQTT.js-kirjastossa yhteyden sulkeminen tapahtuu `client.end()`-funktiolla. Et kuitenkaan voi sulkea yhteyttä heti `subscribeToVehiclePositions`-funktion sisällä, koska React-komponentit tarvitsevat yhteyttä ja sen kautta saatavia ajoneuvotietoja pitkän aikaan. Voit kuitenkin *palauttaa* omasta `subscribeToVehiclePositions`-funktiostasi uuden sulkemisfunktion (cleanup function), joka sulkee MQTT-yhteyden. Tällöin esimerkiksi karttakomponentti voi kutsua tätä funktiota siinä vaiheessa, kun komponentti poistuu näkyvistä tai ei tarvitse enää ajoneuvotietoja.
 
