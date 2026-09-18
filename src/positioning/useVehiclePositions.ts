@@ -6,7 +6,7 @@ import { subscribeToVehiclePositions } from "./mqttClient";
 const POSITION_DATA_EXPIRATION_SECONDS = 60;
 
 /**
- * This hook manages the state of vehicle positions by subscribing to real-time updates from an MQTT broker. 
+ * This hook manages the state of vehicle positions by subscribing to real-time updates from an MQTT broker.
  * It maintains a map of vehicle IDs to their latest positions and provides an array of vehicles.
  */
 export function useVehiclePositions() {
@@ -16,7 +16,7 @@ export function useVehiclePositions() {
     useEffect(() => {
         return subscribeToVehiclePositions((vehicle) => {
             // create a unique ID for the vehicle based on its operator and vehicle number
-            const id = `${vehicle.oper}/${vehicle.veh}`;
+            const id = `${vehicle.oper}/${vehicle.veh}/${vehicle.line}/${vehicle.route}`;
 
             // copy previous state and update the position of the vehicle that was received
             setVehiclePositions((prev) => ({ ...prev, [id]: vehicle }));
