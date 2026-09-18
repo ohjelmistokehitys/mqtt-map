@@ -44,6 +44,7 @@ describe("subscribeToVehiclePositions", () => {
 
         subscribeToVehiclePositions(callback);
 
+        // Verify that mqtt.connect was called to establish a connection
         expect(mqtt.connect).toHaveBeenCalledOnce();
     });
 
@@ -54,6 +55,7 @@ describe("subscribeToVehiclePositions", () => {
 
         eventHandlers.connect?.();
 
+        // Verify that the subscribe method was called on the mqtt client
         expect(mockClient.subscribe).toHaveBeenCalled();
     });
 
@@ -68,7 +70,7 @@ describe("subscribeToVehiclePositions", () => {
         // Make sure that a message handler was registered
         expect(eventHandlers.message).toBeDefined();
 
-        const mockPayload = {
+        const testMqttPayload = {
             VP: {
                 desi: "550",
                 oper: 12,
@@ -78,17 +80,17 @@ describe("subscribeToVehiclePositions", () => {
             },
         };
 
-        const messageBuffer = Buffer.from(JSON.stringify(mockPayload));
+        const messageBuffer = Buffer.from(JSON.stringify(testMqttPayload));
 
         // Simulate receiving a message
         eventHandlers.message("/hfp/v2/journey/ongoing/vp/test", messageBuffer);
 
-        // Verify the callback function was called
+        // Verify the callback function was called after receiving the message
         expect(callback).toHaveBeenCalledTimes(1);
 
-        // Verify the vehicle position was passed with the generated id
+        // Verify the vehicle position was passed to the callback function
         const receivedVehicle: VehiclePosition = callback.mock.lastCall![0];
-        expect(receivedVehicle).toMatchObject(mockPayload.VP);
+        expect(receivedVehicle).toMatchObject(testMqttPayload.VP);
     });
 
     test("@message should handle multiple messages and call callback for each", () => {
@@ -96,6 +98,9 @@ describe("subscribeToVehiclePositions", () => {
 
         subscribeToVehiclePositions(callback);
         eventHandlers.connect?.();
+
+        // Make sure that a message handler was registered
+        expect(eventHandlers.message).toBeDefined();
 
         // Send three messages
         for (let i = 0; i < 3; i++) {
@@ -119,10 +124,13 @@ describe("subscribeToVehiclePositions", () => {
 
         const cleanup = subscribeToVehiclePositions(callback);
 
+        // The subscribeToVehiclePositions function should return a cleanup function
         expect(typeof cleanup).toBe("function");
 
+        // Calling the cleanup function, which is supposed to close the MQTT connection
         cleanup();
 
+        // Verify that the cleanup function ended the MQTT client connection
         expect(mockClient.end).toHaveBeenCalledOnce();
     });
 });
