@@ -26,14 +26,29 @@ export function VehicleInfo({ vehicle }: { vehicle: VehiclePosition; }) {
                 <td>Speed</td>
                 <td>{displaySpeed(vehicle.spd)}</td>
             </tr>
+            <tr>
+                <td>Timetable</td>
+                <td>{timetableInfo(vehicle.dl)}</td>
+            </tr>
         </tbody>
     </table>;
 }
 
-/** 
+/**
  * Utility function for displaying the speed of a vehicle in km/h.
  */
 function displaySpeed(metersPerSecond?: number) {
     const kmh = (metersPerSecond ?? 0) * 3.6;
     return kmh.toFixed(1) + " km/h";
+}
+
+/**
+ * Formats a textual representation of the late / early status of the vehicle.
+ */
+function timetableInfo(dl: number) {
+    if (dl === null) {
+        return "unkown";
+    }
+
+    return dl >= 0 ? `${dl} seconds early` : `${-dl} seconds late`;
 }
