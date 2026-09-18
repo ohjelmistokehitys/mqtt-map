@@ -1,14 +1,11 @@
 /*
  * This file contains a simple demo script that subscribes to the vehicle position topic and logs the received data to the console.
  * This can be used to test your MQTT client implementation without needing to run the full React application.
- * 
- * To run this demo, make sure you have the dependencies installed and then execute the script using tsx:
- * 
- * npm install --save-dev tsx
- * npx tsx ./src/mqttDemo.ts
+ *
+ * You are allowed but not expected to modify this file in the exercise. Instead, make your changes in the mqttClient.ts file.
  */
 
-import { subscribeToVehiclePositions } from "./positioning/mqttClient.js";
+import { subscribeToVehiclePositions } from "./positioning/mqttClient.ts";
 import type { VehiclePosition } from "./types.js";
 
 /** Receives a vehicle position and logs it to the console in a human-readable format. */
