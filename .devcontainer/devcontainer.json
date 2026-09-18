@@ -3,8 +3,13 @@
 {
     "name": "MQTT map",
     "image": "mcr.microsoft.com/devcontainers/javascript-node",
+
     "containerEnv": {
-        // see https://donottrack.sh/
-        "DO_NOT_TRACK": "1"
+        // See https://donottrack.sh/
+        "DO_NOT_TRACK": "1",
+
+        // Use polling to detect source code changes under Windows hosts.
+        // See https://vite.dev/config/server-options#server-watch.
+        "CHOKIDAR_USEPOLLING": "true"
     }
 }

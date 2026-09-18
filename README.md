@@ -13,9 +13,14 @@ Suosittelemme perehtymään [MQTT-protokollan perusperiaatteisiin](https://aws.a
 Tiedonsiirtologiikka on pyritty tekemään täysin erilliseksi React-komponenteista, jotta voit keskittyä MQTT-asiakaslogiikan toteuttamiseen ilman, että sinun tarvitsee huolehtia siitä, miten React-komponentit toimivat. Logiikan toteuttaminen osaksi isompaa sovellusta voi olla siitä huolimatta haastavaa. Vaihtoehtoisesti voit käyttää MQTT-asiakaslogiikkaasi komentoriviltä ajettavalla [`mqttDemo.ts`-skriptillä](./src/mqttDemo.ts), josta kerrotaan tarkemmin alempana.
 
 
+
+
+
 ## Kehitysympäristö
 
 Tämä tehtävä on suunniteltu ratkaistavaksi [kehityskontissa](https://code.visualstudio.com/docs/devcontainers/containers) tai [CodeSpacessa](https://github.com/features/codespaces). Repositorio sisältää valmiin [`devcontainer.json`-tiedoston](./.devcontainer/devcontainer.json), jossa on määritetty kehitysympäristön asetukset. Kehityskontti eristää projektin muusta käyttöjärjestelmästä, joten sillä voi olla myös positiivisia tietoturvavaikutuksia.
+
+Jos ajat projektia kehityskontissa, käynnistä Viten kehityspalvelin komennolla `npm run dev -- --host`, jotta sovellus hyväksyy yhteydet myös kontin ulkopuolisesta selaimestasi.
 
 Halutessasi voit ratkaista tehtävän myös paikallisessa kehitysympäristössä, kunhan sinulla on tuore Node.js-versio sekä npm-paketinhallinta asennettuna.
 
@@ -49,104 +54,147 @@ src
 └── types.ts                    # rajapinnan TypeScript-tyypit
 ```
 
+```mermaid
+flowchart TD
+    subgraph "this project"
+        component["React component\n(TrafficMap.tsx)"]
+        demoScript["Demo script\n(mqttDemo.ts)"]
+
+        mqttClient["subscribeToVehiclePositions\n(mqttClient.ts)"]
+
+        component --> mqttClient
+        demoScript --> mqttClient
+    end
+
+    subgraph Digitransit
+        mqttServer("MQTT server\n(mqtt.hsl.fi)")
+    end
+
+    mqttClient <--> mqttServer
+```
+
 
 ## Sovelluksen käynnistäminen
 
 Sovellus on toteutettu hyödyntäen [Vite-työkalua](https://vite.dev/), joka tarjoaa kätevän kehitysympäristön React-sovelluksille. Sovelluksen asentaminen ja käynnistäminen onnistuu seuraavilla komennoilla:
 
-```bash
-# Asenna riippuvuudet
-npm install
+> Asenna riippuvuudet
+>
+> ```
+> npm install
+> ```
+>
+> Käynnistä kehityspalvelin
+>
+> ```
+> npm run dev
+> ```
+>
+> Tarpeen mukaan salli yhteydet myös kontin ulkopuolelta, jos käytät kehityskonttia (tai CodeSpacea)
+>
+> ```
+> npm run dev -- --host
+> ```
 
-# Käynnistä kehityspalvelin
-npm run dev
-```
+Kun sovellus on käynnissä, voit avata sen selaimessa osoitteessa `http://localhost:5173/` tai vastaavassa Viten ilmoittamassa osoitteessa. Sovelluksen pitäisi näyttää kartta, mutta ajoneuvotietoja ei vielä näy, ennen kuin MQTT-asiakaslogiikka on toteutettu.
 
-Kun sovellus on käynnissä, voit avata sen selaimessa osoitteessa `http://localhost:5173/` (tai muussa Viten ilmoittamassa osoitteessa). Sovelluksen pitäisi näyttää kartta, mutta ajoneuvotietoja ei vielä näy, ennen kuin MQTT-asiakaslogiikka on toteutettu. Vite huolehtii automaattisesti uudelleenlatauksesta, kun teet muutoksia koodiin, mutta mahdollisissa virhetilanteissa kannattaa ladata sivu uudelleen manuaalisesti. Pidä sekä kehityspalvelimen että selaimen konsoli auki ratkaistessasi tehtävää, sillä näet niissä mahdolliset virheilmoitukset ja lokitiedot.
+Vite huolehtii automaattisesti uudelleenlatauksesta, kun teet muutoksia koodiin, mutta mahdollisissa virhetilanteissa kannattaa ladata sivu uudelleen manuaalisesti. Pidä sekä kehityspalvelimen että selaimen konsoli auki ratkaistessasi tehtävää, sillä näet niissä mahdolliset virheilmoitukset ja lokitiedot.
 
 
 ## High-frequency positioning API
 
 [MQTT on tapahtumapohjainen viestintäprotokolla](https://aws.amazon.com/what-is/mqtt/), joka mahdollistaa tehokkaan ja skaalautuvan tiedonsiirron esimerkiksi tällaisessa tilanteessa, jossa sovelluksen on vastaanotettava jatkuvasti päivittyviä tietoja useista ajoneuvoista. MQTT-viestintäpalvelussa ajoneuvotiedot julkaistaan tietyissä "topic"-kanavissa, ja sovelluksen on tilattava sopiva kanava tai kanavat saadakseen tietoja ajoneuvoista.
 
-Tehtävän ratkaisemiseksi sinun tulee perehtyä Digitransit-palvelun [High-frequency positioning -dokumentaatioon](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/). Dokumentaatiossa kerrotaan MQTT-viestintäpalvelun käytöstä, viestintäprotokollasta ja siitä, miten ajoneuvotietoja voidaan tilata ja vastaanottaa. Kokeile esimerkiksi [Quick start -osion ohjeita](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#quickstart) viestien tilauksesta ja seuraamisesta suoraan komentorivillä. Quick start -ohjeesta poiketen sinun ei kannata asentaa `mqtt`-kirjastoa globaalisti, koska se on jo asennettu tämän projektin riippuvuuksiin. Voit käyttää sitä siis suoraan `npx`-komennolla, esim:
+Tehtävän ratkaisemiseksi sinun tulee perehtyä Digitransit-palvelun [High-frequency positioning -dokumentaatioon](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/). Dokumentaatiossa kerrotaan MQTT-viestintäpalvelun käytöstä, viestintäprotokollasta ja siitä, miten ajoneuvotietoja voidaan tilata ja vastaanottaa. Kokeile esimerkiksi [Quick start -osion ohjeita](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#quickstart) viestien tilauksesta ja seuraamisesta suoraan komentorivillä.
+
+Quick start -ohjeesta poiketen sinun ei tarvitse asentaa `mqtt`-kirjastoa globaalisti, koska se on jo asennettu tämän projektin riippuvuuksiin. Voit käyttää sitä siis suoraan [`npx`-komennolla](https://docs.npmjs.com/cli/commands/npx), esim:
 
 ```bash
 # tilaa ja logita ajoneuvotiedot esimerkin vuoksi komentorivillä:
 npx mqtt subscribe -h mqtt.hsl.fi -p 8883 -l mqtts -v -t "/hfp/v2/journey/ongoing/vp/#"
 ```
 
-MQTT-palvelu välittää ajoneuvojen tiedot JSON-muodossa, ja näissä tiedoissa on mm. [ajoneuvon sijainti, nopeus ja suunta](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#the-payload). JSON-viestejä vastaavat TypeScript-tyypit on määritetty valmiiksi [`src/types.ts`-tiedostossa](./src/types.ts). Näitä tyyppejä käytetään React-komponenteissa ja MQTT-asiakaslogiikassa.
+Digitransit välittää ajoneuvojen tiedot JSON-muodossa ja tiedoissa on mukana mm. [ajoneuvon sijainti, nopeus ja suunta](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#the-payload). JSON-viestejä vastaavat TypeScript-tyypit on määritetty valmiiksi [`src/types.ts`-tiedostossa](./src/types.ts). Näitä tyyppejä käytetään React-komponenteissa ja MQTT-asiakaslogiikassa ja voit hyödyntää niitä omassa koodissasi.
 
 
 ## MQTT-logiikan toteuttaminen ja testaaminen
 
 MQTT-logiikka on tarkoitus toteuttaa [`mqttClient.ts`-tiedostoon](./src/positioning/mqttClient.ts) käyttämällä [MQTT.js-kirjastoa](https://www.npmjs.com/package/mqtt). MQTT.js-kirjastoa käytetään myös Digitransit-palvelun dokumentaatiossa, joten sieltä löytyy esimerkkejä MQTT-asiakaslogiikan toteuttamisesta.
 
-Voit kehittää ja testata MQTT-logiikkaasi joko osana karttasovellusta tai erillisen skriptin sekä testien avulla. [`mqttDemo.ts`-tiedosto](./src/mqttDemo.ts) on tarkoitettu erilliseksi skriptiksi, jossa voit testata MQTT-asiakaslogiikkaasi ilman, että sinun tarvitsee käynnistää koko React-sovellusta. Voit ajaa `mqttDemo.ts`-tiedoston Node.js:llä seuraavasti:
+Voit kehittää ja testata MQTT-logiikkaasi joko osana karttasovellusta, [erillisen skriptin](./src/mqttDemo.ts) tai [yksikkötestien](./src/positioning/mqttClient.spec.ts) avulla. [`mqttDemo.ts`-tiedosto](./src/mqttDemo.ts) on tarkoitettu erilliseksi skriptiksi, jossa voit testata MQTT-asiakaslogiikkaasi ilman, että sinun tarvitsee käynnistää Viteä ja React-sovellusta. Voit ajaa `mqttDemo.ts`-tiedoston Node.js:llä seuraavasti:
 
 ```bash
-# asenna tsx-työkalu, joka mahdollistaa TypeScript-tiedoston suorittamisen:
-npm install --save-dev tsx
-
-# suorita mqttDemo.ts käyttäen tsx-työkalua:
-npx tsx ./src/mqttDemo.ts
+node ./src/mqttDemo.ts
 ```
 
-`mqttDemo.ts`-tiedosto kutsuu `subscribeToVehiclePositions`-funktiota ja tulostaa konsoliin kaikki saapuvat ajoneuvotiedot. Tämä on kätevä tapa testata MQTT-asiakaslogiikkaa erillään React-sovelluksesta, ja voit käyttää tätä skriptiä varmistaaksesi, että saat ajoneuvotiedot oikein MQTT:stä ennen kuin kokeilet logiikkaasi selaimessa ja osana isompaa sovellusta.
+`mqttDemo.ts`-tiedosto kutsuu `subscribeToVehiclePositions`-funktiota ja tulostaa konsoliin kaikki saapuvat ajoneuvotiedot. Tämä on kätevä tapa testata MQTT-asiakaslogiikkaa erillään React-sovelluksesta. Voit käyttää tätä skriptiä varmistaaksesi, että saat ajoneuvotiedot oikein MQTT:stä ennen kuin kokeilet logiikkaasi selaimessa ja osana isompaa sovellusta.
 
-> [!TIP]
-> Alussa `mqttDemo.ts`-tiedosto ei tulosta mitään, mutta toteuttaessasi `subscribeToVehiclePositions`-funktion, sen pitäisi alkaa tulostamaan ajoneuvotietoja konsoliin.
+> [!NOTE]
+> Alussa `mqttDemo.ts`-tiedosto tulostaa vain aloitus- ja lopetusviestit, mutta toteuttaessasi `subscribeToVehiclePositions`-funktion, sen pitäisi alkaa tulostamaan ajoneuvotietoja konsoliin.
 
 
 ## Tehtävä: `subscribeToVehiclePositions`-funktion toteutus
 
-[Funktiosi](./src/positioning/mqttClient.ts) tulee luoda MQTT-asiakas, joka yhdistää Digitransit-palvelun MQTT-brokeriin ja tilaa sopivan topic-kanavan saadakseen ajoneuvotiedot. Kun uusia tietoja saapuu, funktiosi tulee kutsua sille annettua callback-funktiota, joka päivittää React-komponentit uusilla ajoneuvotiedoilla. Callback-funktion tulee saada parametrinaan ajoneuvotiedot, jotka on vastaanotettu [`VehiclePosition`-tyyppisinä olioina](./src/types.ts).
+[Funktiosi](./src/positioning/mqttClient.ts) tulee luoda MQTT-asiakas, joka yhdistää Digitransit-palvelun MQTT-brokeriin ja tilaa sopivan topic-kanavan saadakseen ajoneuvotiedot. Kun uusia tietoja saapuu, funktiosi tulee kutsua sille annettua `update`-funktiota. Update-funktiolle tulee antaa parametrina ajoneuvotiedot, jotka on vastaanotettu MQTT-viestinä [`VehiclePosition`-tyyppisinä olioina](./src/types.ts).
 
-Funktion eri ominaisuuksien toteuttamisessa tarvitset sekä [MQTT.js-kirjaston dokumentaatiota](https://github.com/mqttjs/MQTT.js) että [Digitransit-palvelun HFP-dokumentaatiota](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/). Perusidea ja eri vaiheissa oleelliset rajoitteet esitetään alla, mutta yksityiskohtaisempi toteutus on sinun tehtäväsi.
+Funktion eri ominaisuuksien toteuttamisessa tarvitset sekä [MQTT.js-kirjaston dokumentaatiota](https://github.com/mqttjs/MQTT.js) että [Digitransit-palvelun HFP-dokumentaatiota](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/). Perusidea ja eri vaiheiden oleelliset osat on ohjeistettu alla, mutta yksityiskohtaisempi toteutus on sinun tehtäväsi.
 
 
 ### 1. Yhteyden muodostaminen (30 %)
 
-Ensimmäisenä funktiosi tulee muodostaa yhteys Digitransit-palvelun MQTT-brokeriin. Digitransit-palvelu tukee sekä WebSocket- että TCP-pohjaisia MQTT-yhteyksiä, mutta koska tätä sovellusta on tarkoitus käyttää selaimessa, sinun tulee [valita palvelimeksi](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#api-endpoints) `wss://mqtt.hsl.fi:443/` (MQTT over WebSockets with TLS, for browsers). `mqtt.connect`-funktion dokumentaatio löytyy [MQTT.js-kirjaston GitHub-sivulta](https://github.com/mqttjs/MQTT.js?tab=readme-ov-file#mqttconnecturl-options).
+Ensimmäisenä funktiosi tulee muodostaa yhteys Digitransit-palvelun MQTT-brokeriin. Digitransit-palvelu tukee sekä WebSocket- että TCP-pohjaisia MQTT-yhteyksiä, mutta koska tätä sovellusta on tarkoitus käyttää selaimessa, sinun tulee [valita palvelimeksi](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#api-endpoints) `wss://mqtt.hsl.fi:443/` (MQTT over WebSockets with TLS, for browsers).
+
+`mqtt.connect`-funktion dokumentaatio löytyy [MQTT.js-kirjaston GitHub-sivulta](https://github.com/mqttjs/MQTT.js?tab=readme-ov-file#mqttconnecturl-options). Connect-funktio palauttaa MQTT-client-olion, jota käytetään seuraavissa vaiheissa yhteyden hallintaan, topic-kanavan tilaamiseen ja viestien vastaanottamiseen.
+
 
 ### 2. Sijaintitietojen tilaaminen (20 %)
 
-Kun yhteys on muodostettu, sinun tulee tilata sopiva [*topic*-kanava](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#the-topic) saadaksesi ajoneuvotiedot. Digitransit-palvelussa ajoneuvotiedot julkaistaan `/hfp/v2/+/+/+/#`-topic-kanavissa, jossa `+`-merkit sekä `#`-merkit ovat jokerimerkkejä, jotka voivat vastata mitä tahansa yksittäistä arvoa tai useampaa arvoa.
+Kun yhteys on muodostettu, sinun tulee tilata sopiva [*topic*-kanava](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#the-topic) saadaksesi ajoneuvotiedot. Digitransit-palvelussa ajoneuvotiedot julkaistaan `/hfp/v2/+/+/+/#`-topic-kanavissa, jossa `+`-merkit sekä `#`-merkit ovat "jokerimerkkejä", jotka voivat vastata mitä tahansa yksittäistä arvoa tai useampaa arvoa.
 
-Topicissa määritellään mm. ajoneuvon tilapäivityksen tyyppi, joista olemme kiinnostuneet ainoastaan `vp`-tyypin *vehicle position* -tilapäivityksistä. Näin ollen voit tilata esimerkiksi `/hfp/v2/journey/ongoing/vp/#`-topic-kanavan, jonka kautta saat kaikki mahdolliset ajoneuvotiedot, jotka liittyvät meneillään olevien matkojen sijaintipäivityksiin. Tämä kanava tuottaa erittäin paljon tietoa, joten voit myös tutustua dokumentaatioon ja rajata tilaustasi tarkemmin. Tarkemmat tiedot löydät [Digitransit-palvelun HFP-dokumentaatiosta](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#the-topic) sekä sen [esimerkeistä](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#examples).
+Topicissa määritellään mm. ajoneuvon tilapäivityksen tyyppi, joista olemme kiinnostuneet ainoastaan `vp`-tyypin *vehicle position* -tilapäivityksistä. Näin ollen voit tilata esimerkiksi `/hfp/v2/journey/ongoing/vp/#`-topic-kanavan, jonka kautta saat kaikki ajoneuvotiedot, jotka liittyvät meneillään olevien matkojen sijaintipäivityksiin.
 
-[Dokumentaatiossa kerrotaan myös](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#a-bounding-box), että voit tilata tiettyjen kriteerien mukaisia tietoja käyttämällä tarkempia topic-kanavia, mutta tässä harjoituksessa riittää, että tilaat kaikki ajoneuvotiedot, joita suodatetaan tarvittaessa omassa koodissa.
+> [!NOTE]
+> Edellä mainittu mqtt-kanava tuottaa erittäin paljon tietoa, joten voit myös tutustua dokumentaatioon ja rajata tilaustasi tarkemmin. Tarkemmat tiedot löydät [Digitransit-palvelun HFP-dokumentaatiosta](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#the-topic) sekä sen [esimerkeistä](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#examples).
+>
+> [Dokumentaatiossa kerrotaan myös](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#a-bounding-box), että voit tilata tiettyjen kriteerien mukaisia tietoja käyttämällä tarkempia topic-kanavia, mutta tässä harjoituksessa riittää, että tilaat kaikki ajoneuvotiedot, vaikka ne olisivatkin kartalla näkyvän alueen ulkopuolella.
+
 
 ### 3. Tietojen vastaanottaminen ja käsittely (30 %)
 
 Kun tilaus on tehty, MQTT-broker lähettää sinulle jatkuvasti uusia ajoneuvotietoja aina, kun niitä saapuu. Jotta voit reagoida uusiin ajoneuvojen sijaintitietoihin, MQTT-clientille tulee asettaa kuuntelija, jota client kutsuu aina uusien viestien saapuessa. MQTT.js-kirjastossa tämä tapahtuu `client.on('message', callback)`-funktiolla, jossa `callback` on funktio, joka saa parametrinaan topicin ja viestin sisällön. Löydät esimerkin[ GitHubista](https://github.com/mqttjs/MQTT.js?tab=readme-ov-file#example).
 
-Vastaanotettu viesti on binäärimuodossa, joten se tulee muuntaa ensin tekstiksi `message.toString()`-funktiolla ([ks. esimerkki](https://github.com/mqttjs/MQTT.js?tab=readme-ov-file#example)) ja sen jälkeen parsia JSON-olioksi `JSON.parse`-funktiolla. Muunnoksen jälkeen sinulla on käytössäsi JavaScript-olio, joka vastaa Digitransit-palvelun [dokumentaatissa esitettyä esimerkkiä](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#the-payload). Näissä tiedoissa on mm. ajoneuvon sijainti, nopeus ja suunta, ja näitä tietoja varten on määritetty valmis `VehiclePosition`-tyyppi [`src/types.ts`-tiedostossa](./src/types.ts). `VehiclePosition`-tietoja käytetään React-komponenteissa ajoneuvojen sijaintien ja muiden tietojen näyttämiseen kartalla.
+Vastaanotettu viesti on binäärimuodossa, joten se tulee muuntaa ensin tekstiksi `message.toString()`-funktiolla ([ks. esimerkki](https://github.com/mqttjs/MQTT.js?tab=readme-ov-file#example)) ja sen jälkeen parsia vielä json-muodosta olioksi `JSON.parse`-funktiolla. Muunnoksen jälkeen sinulla on käytössäsi JavaScript-olio, joka vastaa Digitransit-palvelun [dokumentaatissa esitettyä esimerkkiä](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#the-payload). Näissä tiedoissa on mm. ajoneuvon sijainti, nopeus ja suunta. Näitä tietoja varten on määritetty valmis `VehiclePosition`-tyyppi [`src/types.ts`-tiedostossa](./src/types.ts). `VehiclePosition`-tietoja käytetään React-komponenteissa ajoneuvojen sijaintien ja muiden tietojen näyttämiseen kartalla.
 
-Jotta alun perin `subscribeToVehiclePositions`-funktiotasi kutsunut taho saa tiedon uudesta ajoneuvotiedosta, sinun tulee kutsua funktiollesi annettua callback-funktiota. Tarvittaessa määrittele datan tyypiksi `VehiclePosition` esimerkiksi `myData as VehiclePosition`, jotta TypeScript ymmärtää, että parsittu JSON-data vastaa `VehiclePosition`-tyyppistä olioa.
+Jotta alun perin `subscribeToVehiclePositions`-funktiotasi kutsunut taho saa tiedon uudesta ajoneuvotiedosta, sinun tulee kutsua funktiollesi annettua `update`-funktiota. Tarvittaessa määrittele datan tyypiksi `VehiclePosition` esimerkiksi `myData as VehiclePosition`, jotta TypeScript ymmärtää, että parsittu JSON-data vastaa `VehiclePosition`-tyyppistä olioa.
 
 > [!TIP]
 > Huomaa, että MQTT-broker tukee lukuisia eri tyyppisiä tilapäivityksiä, joten `VehiclePosition`-tiedot eivät ole viestin "juuressa", vaan tätä tilapäivitystä vastaavan `VP`-nimisen attribuutin alla. Katso tarkemmin [Digitransit-palvelun esimerkki](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/high-frequency-positioning/#the-payload) sekä `MqttPayload`- ja `VehiclePosition`-tyyppien määritelmät [`src/types.ts`-tiedostossa](./src/types.ts).
 
+
 ### 4. Yhteyden sulkeminen (20 %)
 
-Sovelluksessa on syytä olla myös mekanismi MQTT-yhteyden sulkemiseksi, kun sitä ei enää tarvita. Esimerkiksi React-sovelluksessa käyttäjä saattaa navigoida pois karttanäkymästä, jolloin MQTT-yhteyden sulkeminen on tärkeää.
+Sovelluksessa on syytä olla myös mekanismi MQTT-yhteyden sulkemiseksi, kun sitä ei enää tarvita. Esimerkiksi React-sovelluksessa käyttäjä saattaa navigoida pois karttanäkymästä, jolloin MQTT-yhteyden sulkeminen on tärkeää, jotta tietoliikennettä ei jatketa turhaan taustalla. Yhteyden sulkeminen on myös tärkeää, jotta sovellus ei kuormita Digitransit-palvelua turhilla tilauksilla.
 
-MQTT.js-kirjastossa yhteyden sulkeminen tapahtuu `client.end()`-funktiolla. Et kuitenkaan voi sulkea yhteyttä heti `subscribeToVehiclePositions`-funktion sisällä, koska React-komponentit tarvitsevat yhteyttä ja sen kautta saatavia ajoneuvotietoja pitkän aikaan. Voit kuitenkin *palauttaa* omasta `subscribeToVehiclePositions`-funktiostasi uuden sulkemisfunktion (cleanup function), joka sulkee MQTT-yhteyden. Tällöin esimerkiksi karttakomponentti voi kutsua tätä funktiota siinä vaiheessa, kun komponentti poistuu näkyvistä tai ei tarvitse enää ajoneuvotietoja.
+MQTT.js-kirjastossa yhteyden sulkeminen tapahtuu `client.end()`-funktiolla. Huomaa, että et voi sulkea yhteyttä heti `subscribeToVehiclePositions`-funktion sisällä, koska React-komponentit tarvitsevat yhteyttä ja sen kautta saatavia ajoneuvotietoja pitkän aikaan. Voit kuitenkin *palauttaa* omasta `subscribeToVehiclePositions`-funktiostasi uuden sulkemisfunktion (ns. cleanup function), jonka avulla funktiosi kutsuja voi sulkea MQTT-yhteyden myöhemmin.
+
+Tällöin esimerkiksi karttakomponentti voi kutsua tätä funktiota siinä vaiheessa, kun komponentti poistuu näkyvistä tai ei tarvitse enää ajoneuvotietoja.
+
 
 ### 5. Virheet ja poikkeustilanteet
 
-Tämän tehtävän kannalta riittää, että MQTT-yhteyden muodostaminen ja tilaaminen onnistuu normaalisti, mutta voit halutessasi toteuttaa myös virheiden käsittelyn. Esimerkiksi MQTT-yhteyden muodostaminen tai tilaus saattavat epäonnistua, tai viestintä palvelimen kanssa saattaa keskeytyä. Voit oman harkintasi mukaan varautua myös näihin tilanteisiin, mutta tehtävän kannalta riittää, että peruslogiikka toimii normaalisti.
+Tämän tehtävän kannalta riittää, että MQTT-yhteyden muodostaminen ja tilaaminen onnistuu normaalisti, mutta voit halutessasi toteuttaa myös virheiden käsittelyn.
+
+Esimerkiksi MQTT-yhteyden muodostaminen tai tilaus saattavat epäonnistua, tai viestintä palvelimen kanssa saattaa keskeytyä. Voit oman harkintasi mukaan varautua myös näihin tilanteisiin, mutta tehtävän kannalta riittää, että peruslogiikka toimii normaalisti.
+
 
 ## Ratkaisun testaaminen ja lähettäminen arvioitavaksi
 
 Ratkaisusi testataan käyttämällä automaattisia [Vitest](https://vitest.dev/)-testejä. Testit sijaitsevat [`src/positioning/mqttClient.spec.ts`-tiedostossa](./src/positioning/mqttClient.spec.ts) ja ne tarkistavat, että `subscribeToVehiclePositions`-funktiosi toimii vaaditulla tavalla:
 
-1. funktio muodostaa yhteyden MQTT-brokeriin
+1. muodostaa yhteyden MQTT-brokeriin
 2. tilaa sopivan topic-kanavan
-3. vastaanottaa ajoneuvotietoja ja kutsuu callback-funktiota uusien tietojen saapuessa
-4. palauttaa sulkemisfunktion, joka sulkee MQTT-yhteyden.
+3. vastaanottaa ajoneuvotietoja ja kutsuu `update`-funktiota uusien tietojen saapuessa
+4. palauttaa sulkemisfunktion, jolla MQTT-yhteydes voidaan sulkea.
 
 Koska sijaintitiedot vaihtuvat jatkuvasti, testit eivät käytä oikeaa MQTT-palvelinta, vaan ne käyttävät [mock-olioita](https://vitest.dev/guide/mocking) ja simuloivat viestintää. Näin varmistetaan, että testit ovat luotettavia ja toistettavissa vaikka palvelimen ja julkisen liikenteen tilanne vaihtelisi.
 
