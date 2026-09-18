@@ -34,6 +34,26 @@ Liikenteen sijaintitietojen päivittäminen on toteutettu [`useVehiclePositions`
 Varsinainen MQTT-asiakaslogiikka on tarkoitus toteuttaa erillisessä [`mqttClient.ts`-tiedostossa](./src/positioning/mqttClient.ts), joka tarjoaa yksinkertaisen rajapinnan MQTT-viestintäpalveluun. Tiedoston `subscribeToVehiclePositions`-funktio on tarkoitus toteuttaa siten, että tälle funktiolle voidaan antaa [callback-funktio](https://en.wikipedia.org/wiki/Callback_(computer_programming)), jota kutsutaan aina, kun uusia ajoneuvotietoja saapuu MQTT:stä. Tällä tavalla React-komponentit voivat "tilata" ajoneuvotietoja ilman, että niiden tarvitsee tietää MQTT:n yksityiskohdista.
 
 
+```mermaid
+flowchart TD
+    subgraph "this project"
+        component["⚛️ React component\n(TrafficMap.tsx)"]
+        demoScript["⚙️ Demo script\n(mqttDemo.ts)"]
+
+        mqttClient["📡 subscribeToVehiclePositions\n(mqttClient.ts)"]
+
+        component --> mqttClient
+        demoScript --> mqttClient
+    end
+
+    subgraph Digitransit
+        mqttServer("🌍 MQTT server\n(mqtt.hsl.fi)")
+    end
+
+    mqttClient <--> mqttServer
+```
+
+
 ## Keskeisimmät lähdekooditiedostot
 
 Seuraava puurakenne esittää sovelluksen keskeisimmät lähdekooditiedostot. Kaikkiin tiedostoihin ei välttämättä tarvitse tutustua tai tehdä muutoksia, koska MQTT-asiakaslogiikka on rajoitettu yksittäiseen [`mqttClient.ts`-tiedostoon](./src/positioning/mqttClient.ts):
@@ -52,25 +72,6 @@ src
 │
 ├── mqttDemo.ts                 # erillinen Node.js-skripti yhteyden testaamiseen
 └── types.ts                    # rajapinnan TypeScript-tyypit
-```
-
-```mermaid
-flowchart TD
-    subgraph "this project"
-        component["React component\n(TrafficMap.tsx)"]
-        demoScript["Demo script\n(mqttDemo.ts)"]
-
-        mqttClient["subscribeToVehiclePositions\n(mqttClient.ts)"]
-
-        component --> mqttClient
-        demoScript --> mqttClient
-    end
-
-    subgraph Digitransit
-        mqttServer("MQTT server\n(mqtt.hsl.fi)")
-    end
-
-    mqttClient <--> mqttServer
 ```
 
 
